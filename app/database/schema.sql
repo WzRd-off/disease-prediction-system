@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY(clinic_id) REFERENCES clinics(clinic_id)
 );
 
-[cite_start]-- 7. Таблиця Пацієнтів (Pacient) [cite: 105]
+-- 7. Таблиця Пацієнтів (Pacient)
 CREATE TABLE IF NOT EXISTS patients (
     rnkop_code TEXT PRIMARY KEY,                 -- РНКОПП (Код пацієнта - унікальний ключ)
     full_name TEXT NOT NULL,                     -- ПІБ (FIO)
@@ -83,4 +83,4 @@ CREATE TABLE IF NOT EXISTS ill_history (
 -- Додаємо дефолтного головного адміністратора
 -- Пароль (в реальності має бути хешований): admin
 INSERT OR IGNORE INTO users (login, password_hash, full_name, role, clinic_id) 
-VALUES ('admin@system.com', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'Main Administrator', 'admin', NULL);
+VALUES ('admin', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'Main Administrator', 'admin', NULL);

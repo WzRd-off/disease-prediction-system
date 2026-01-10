@@ -47,7 +47,7 @@ class LoginWindow(QMainWindow):
         user = self.auth_service.authenticate(username, password)
 
         if user:
-            print(f"Вхід успішний: {user['username']} (Role: {user['role']})")
+            print(f"Вхід успішний: {user['login']} (Role: {user['role']})")
             
             self.close()
             
