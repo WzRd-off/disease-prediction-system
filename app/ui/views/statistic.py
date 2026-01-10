@@ -3,4 +3,4 @@ from PyQt6.QtWidgets import QWidget
 
 class StatisticView(QWidget):
     def __init__(self):
-        super.__init__()
+        super().__init__()

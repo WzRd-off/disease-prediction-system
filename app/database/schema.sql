@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS diseases (
 CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY AUTOINCREMENT,   -- UserId
     login TEXT NOT NULL UNIQUE,                  -- Login (email)
-    password_hash TEXT NOT NULL,                 -- passwd
+    password TEXT NOT NULL,                 -- passwd
     full_name TEXT NOT NULL,                     -- ПІБ (FIO)
     clinic_id INTEGER,                           -- clinic (FK). Nullable для Гол. Адміна
     phone TEXT,                                  -- Phone
@@ -82,5 +82,5 @@ CREATE TABLE IF NOT EXISTS ill_history (
 
 -- Додаємо дефолтного головного адміністратора
 -- Пароль (в реальності має бути хешований): admin
-INSERT OR IGNORE INTO users (login, password_hash, full_name, role, clinic_id) 
-VALUES ('admin', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'Main Administrator', 'admin', NULL);
+INSERT OR IGNORE INTO users (login, password, full_name, role, clinic_id) 
+VALUES ('admin', 'admin', 'Main Administrator', 'admin', NULL);
