@@ -54,7 +54,7 @@ class DatabaseManager():
             return None
 #managers
     def get_all_managers(self):
-        query = "SELECT * FROM users WHERE role='manager' ORDER BY m.id ASC"
+        query = "SELECT * FROM users WHERE role='manager' ORDER BY user_id ASC"
         return self.execute_query(query, fetch_all=True)
     
     def add_manager(self, login, password, full_name, clinic_id, phone):
