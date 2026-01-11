@@ -41,7 +41,7 @@ class ProfileView(QWidget):
 
         #Клиника
         form_layout.addWidget(QLabel("Клініка:"))
-        self.inp_clinic_id = QLineEdit(self.user['clinic_id'])
+        self.inp_clinic_id = QLineEdit(str(self.user['clinic_id']))
         self.inp_clinic_id.setReadOnly(True)
         form_layout.addWidget(self.inp_clinic_id)
 

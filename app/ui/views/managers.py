@@ -77,7 +77,7 @@ class ManagersView(QWidget):
         all_managers = self.db_manager.get_all_managers()
         target = next((i for i in all_managers if i['user_id'] == manager_id), None)
         if target:
-            dialog = ManagerDialog(self.db_manager, manager_target=target, parent=self)
+            dialog = ManagerDialog(self.db_manager, manager=target, parent=self)
             if dialog.exec():
                 data = dialog.get_data()
                 self.db_manager.update_manager(manager_id, data['login'], data['password'], data['full_name'], data['clinic_id'], data['phone'])
