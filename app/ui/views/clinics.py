@@ -5,13 +5,13 @@ from PyQt6.QtWidgets import (
     QTableWidget, QHeaderView, QTableWidgetItem
 )
 
+from app.database.db_manager import DatabaseManager
 from app.ui.dialogs.clinic_dialog import ClinicDialog
 
 class ClinicsView(QWidget):
     def __init__(self, db_manager):
         super().__init__()
-        # В идеале db_manager должен приходить из MainWindow, но пока оставляем так для совместимости
-        self.db_manager = db_manager
+        self.db_manager = db_manager 
         
         self.init_ui()
 
@@ -81,7 +81,6 @@ class ClinicsView(QWidget):
         return int(self.table.item(selected_items[0].row(), 0).text())
 
     def add_clinic(self):
-        # ВАЖНО: Передаем self.db_manager в диалог
         dialog = ClinicDialog(self.db_manager, parent=self)
         if dialog.exec():
             data = dialog.get_data()
@@ -102,7 +101,6 @@ class ClinicsView(QWidget):
         target = next((c for c in all_clinics if c['clinic_id'] == clinic_id), None)
         
         if target:
-            # ВАЖНО: Передаем self.db_manager в диалог
             dialog = ClinicDialog(self.db_manager, clinic=target, parent=self)
             if dialog.exec():
                 data = dialog.get_data()
@@ -117,10 +115,18 @@ class ClinicsView(QWidget):
         
         reply = QMessageBox.question(
             self, "Видалити?", 
-            "Ви впевнені? Якщо у клініки є записи, вона не видалиться.",
+            "Ви впевнені? Якщо у клініки є історія хвороб, вона буде архівована, а не видалена.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
         )
         
         if reply == QMessageBox.StandardButton.Yes:
-            self.db_manager.delete_clinic(clinic_id)
+            result = self.db_manager.delete_clinic(clinic_id)
+            
+            if result == 'deleted':
+                QMessageBox.information(self, "Успіх", "Клініка була успішно видалена (історії не знайдено).")
+            elif result == 'archived':
+                QMessageBox.warning(self, "Архівація", "Клініка була переміщена в АРХІВ, оскільки містить історію хвороб.")
+            else:
+                QMessageBox.critical(self, "Помилка", "Не вдалося видалити клініку.")
+                
             self.refresh_table()

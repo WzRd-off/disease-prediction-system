@@ -98,19 +98,32 @@ class DatabaseManager():
         return self.execute_query(query, (clinic_id,), fetch_all=True)
 
     def add_ill_history(self, patient_code, local_id, ill_code, is_chronic, visit_date, status, prescription):
+        # 1. Добавляем запись в историю
         query = """
             INSERT INTO ill_history (patient_code, local_id, ill_code, is_chronic, visit_date, status, prescription)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """
-        return self.execute_query(query, (patient_code, local_id, ill_code, is_chronic, visit_date, status, prescription))
-
+        res = self.execute_query(query, (patient_code, local_id, ill_code, is_chronic, visit_date, status, prescription))
+        
+        if res:
+            self._update_patient_status_auto(patient_code, status, is_chronic)
+            
+        return res
+    
     def update_ill_history(self, history_id, patient_code, local_id, ill_code, is_chronic, visit_date, status, prescription):
+        # 1. Обновляем запись
         query = """
             UPDATE ill_history
             SET patient_code=?, local_id=?, ill_code=?, is_chronic=?, visit_date=?, status=?, prescription=?
             WHERE history_id=?
         """
-        return self.execute_query(query, (patient_code, local_id, ill_code, is_chronic, visit_date, status, prescription, history_id))
+        res = self.execute_query(query, (patient_code, local_id, ill_code, is_chronic, visit_date, status, prescription, history_id))
+        
+        # 2. Обновляем статус пациента (вдруг изменили статус в истории)
+        if res is not None:
+             self._update_patient_status_auto(patient_code, status, is_chronic)
+             
+        return res
     
     def delete_ill_history(self, history_id):
         return self.execute_query("DELETE FROM ill_history WHERE history_id=?", (history_id,))
@@ -203,7 +216,51 @@ class DatabaseManager():
     def update_clinic(self, clinic_id, name, local_id, address, email, phone):
         return self.execute_query("UPDATE clinics SET clinic_name=?, local_id=?, address=?, email=?, phone=? WHERE clinic_id=?", (name, local_id, address, email, phone, clinic_id))
     def delete_clinic(self, clinic_id):
-        return self.execute_query("DELETE FROM clinics WHERE clinic_id=?", (clinic_id,))
+        """
+        Попытка удалить клинику. Если есть история болезней за последние 10 лет - архивируем.
+        Иначе - удаляем.
+        Возвращает: 'archived' или 'deleted' или None (ошибка)
+        """
+
+        # Получаем список врачей клиники
+        doctors = self.get_users_by_role_and_clinic('doctor', clinic_id)
+        doctor_ids = [d['user_id'] for d in doctors]
+        
+        has_history = False
+        if doctor_ids:
+            # Строим плейсхолдеры для IN (...)
+            placeholders = ','.join('?' * len(doctor_ids))
+            
+            # Ищем, были ли записи в истории у пациентов этих врачей
+            # ill_history -> patients -> (doctor_id IN doctor_ids)
+            query_check = f"""
+                SELECT COUNT(*) as cnt 
+                FROM ill_history h
+                JOIN patients p ON h.patient_code = p.rnkop_code
+                WHERE p.doctor_id IN ({placeholders})
+            """
+            res = self.execute_query(query_check, tuple(doctor_ids), fetch_one=True)
+            if res and res['cnt'] > 0:
+                has_history = True
+        
+        if has_history:
+            # Архивация
+            self.execute_query("UPDATE clinics SET is_archived=1 WHERE clinic_id=?", (clinic_id,))
+            return 'archived'
+        else:
+            # Удаление (каскадное удаление врачей/пациентов должно быть настроено в БД, 
+            # но если не настроено, удаление может упасть из-за Foreign Keys. 
+            # Для надежности лучше сначала удалить пользователей.)
+            
+            # В SQLite с PRAGMA foreign_keys = ON каскад сработает, если он прописан в CREATE TABLE.
+            # Если нет - будет ошибка. Попробуем удалить.
+            try:
+                self.execute_query("DELETE FROM clinics WHERE clinic_id=?", (clinic_id,))
+                return 'deleted'
+            except sqlite3.IntegrityError:
+                # Если удалить нельзя из-за связей, но истории нет - тоже архивируем для безопасности
+                self.execute_query("UPDATE clinics SET is_archived=1 WHERE clinic_id=?", (clinic_id,))
+                return 'archived'
 
     # --- PROFILE ---
     def update_user_profile(self, user_id, full_name, phone):
@@ -213,6 +270,26 @@ class DatabaseManager():
         return res is not None
     def change_password(self, user_id, new_pass):
         return self.execute_query("UPDATE users SET password=? WHERE user_id=?", (new_pass, user_id))
+
+    def _update_patient_status_auto(self, patient_code, history_status, is_chronic):
+        """
+        Автоматически обновляет статус пациента в таблице patients
+        на основе данных из истории болезни.
+        """
+        new_status = 'healthy'
+        
+        # Логика маппинга статусов
+        if history_status == 'помер':
+            new_status = 'dead'
+        elif is_chronic:
+            new_status = 'chronic'
+        elif history_status == 'хворіє':
+            new_status = 'sick'
+        elif history_status == 'одужав':
+            new_status = 'healthy'
+            
+        # Обновляем статус в таблице patients
+        self.execute_query("UPDATE patients SET status=? WHERE rnkop_code=?", (new_status, patient_code))
 
     def _ensure_db_folder_exists(self):
         folder = os.path.dirname(self.db_path)

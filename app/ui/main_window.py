@@ -187,7 +187,7 @@ class MainWindow(QMainWindow):
         self.content_stack.addWidget(self.statistic_view)
         self.content_stack.addWidget(self.prediction_view)
 
-        self.add_nav_button("Хвороби", 0)
+        self.add_nav_button("Прийоми", 0)
         self.add_nav_button("Пацієнти", 1)
         self.add_nav_button("Адміністратори", 2)
         self.add_nav_button("Профіль", 3)

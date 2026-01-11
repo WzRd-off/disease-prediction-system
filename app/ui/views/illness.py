@@ -87,18 +87,13 @@ class IllnessView(QWidget):
         dialog = IllnessDialog(self.db_manager, self.clinic_id, parent=self)
         if dialog.exec():
             d = dialog.get_data()
+            
+            # Добавляем запись. Статус пациента обновится автоматически внутри add_ill_history
             self.db_manager.add_ill_history(
                 d['patient_code'], d['local_id'], d['ill_code'], 
                 d['is_chronic'], d['visit_date'], d['status'], d['prescription']
             )
             
-            # ВАЖЛИВО З ТЗ: Якщо статус "помер", оновлюємо статус пацієнта
-            if d['status'] == 'помер':
-                self.db_manager.update_patient_comment_only(d['patient_code'], "ПОМЕР (Архів)") 
-                # Тут можна було б і статус в patient оновити, якщо ми додали це поле.
-                # Але оскільки add_patient приймає status, то update теж може.
-                # Логіку зміни статусу пацієнта можна доробити.
-
             self.refresh_table()
 
     def edit_record(self):
@@ -112,6 +107,7 @@ class IllnessView(QWidget):
             dialog = IllnessDialog(self.db_manager, self.clinic_id, history=target, parent=self)
             if dialog.exec():
                 d = dialog.get_data()
+                # Обновляем запись. Статус пациента тоже может измениться
                 self.db_manager.update_ill_history(
                     hist_id, d['patient_code'], d['local_id'], d['ill_code'], 
                     d['is_chronic'], d['visit_date'], d['status'], d['prescription']

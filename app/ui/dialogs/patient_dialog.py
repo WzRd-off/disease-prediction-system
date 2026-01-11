@@ -12,7 +12,7 @@ class PatientDialog(QDialog):
         self.patient = patient
         
         self.setWindowTitle("Картка пацієнта")
-        self.setFixedSize(400, 550)
+        self.setFixedSize(400, 500)
         
         layout = QVBoxLayout()
         
@@ -49,16 +49,7 @@ class PatientDialog(QDialog):
         self._load_doctors()
         layout.addWidget(self.combo_doctor)
 
-        # Статус (Новое поле)
-        layout.addWidget(QLabel("Статус:"))
-        self.combo_status = QComboBox()
-        self.combo_status.addItem("Здоровий", "healthy")
-        self.combo_status.addItem("Хворіє", "sick")
-        self.combo_status.addItem("Хронічні захворювання", "chronic")
-        self.combo_status.addItem("Помер", "dead")
-        layout.addWidget(self.combo_status)
-
-        # Коментар
+        # Комментар
         layout.addWidget(QLabel("Коментар (Особливості):"))
         self.inp_comments = QLineEdit()
         layout.addWidget(self.inp_comments)
@@ -96,6 +87,11 @@ class PatientDialog(QDialog):
         self.accept()
 
     def get_data(self):
+
+        current_status = 'healthy'
+        if self.patient:
+            current_status = self.patient['status']
+
         return {
             'rnkop': self.inp_rnkop.text(),
             'full_name': self.inp_name.text(),
@@ -103,7 +99,7 @@ class PatientDialog(QDialog):
             'address': self.inp_address.text(),
             'phone': self.inp_phone.text(),
             'doctor_id': self.combo_doctor.currentData(),
-            'status': self.combo_status.currentData(),
+            'status': current_status, # Автоматический статус (новый=healthy, старый=сохраняется)
             'comments': self.inp_comments.text()
         }
     
@@ -122,9 +118,3 @@ class PatientDialog(QDialog):
         index_doc = self.combo_doctor.findData(self.patient['doctor_id'])
         if index_doc >= 0:
             self.combo_doctor.setCurrentIndex(index_doc)
-
-        # Установка статуса
-        status = self.patient['status']
-        index_status = self.combo_status.findData(status)
-        if index_status >= 0:
-            self.combo_status.setCurrentIndex(index_status)
