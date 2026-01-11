@@ -3,12 +3,14 @@ import os
 from PyQt6.QtWidgets import QApplication
 from app.database.db_manager import DatabaseManager
 from app.ui.login_window import LoginWindow
+from app.ui.styles import APP_STYLE
 
 DB_PATH = os.path.join('data', 'app_database.db')
 SCHEMA_PATH = os.path.join("app", "database", "schema.sql")
 
 def main():
     app = QApplication(sys.argv)
+    app.setStyleSheet(APP_STYLE)
     
     print("Підключення до БД...")
     db_manager = DatabaseManager(DB_PATH)

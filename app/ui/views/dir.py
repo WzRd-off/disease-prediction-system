@@ -2,84 +2,13 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
     QPushButton, QTableWidget, QHeaderView, QTableWidgetItem,
-    QTabWidget, QInputDialog, QMessageBox, QDialog, QComboBox, 
-    QDialogButtonBox, QLineEdit
+    QTabWidget, QInputDialog, QMessageBox
 )
 
-# --- ДИАЛОГ ДЛЯ РАЙОНА (Уже был) ---
-class LocalDialog(QDialog):
-    def __init__(self, db_manager, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Додати район")
-        self.setFixedSize(300, 150)
-        
-        layout = QVBoxLayout()
-        layout.addWidget(QLabel("Назва району:"))
-        self.line_name = QLineEdit()
-        layout.addWidget(self.line_name)
-        
-        layout.addWidget(QLabel("Оберіть регіон:"))
-        self.combo_regions = QComboBox()
-        regions = db_manager.get_all_regions()
-        for r in regions:
-            self.combo_regions.addItem(f"{r['region_name']} (ID: {r['region_id']})", r['region_id'])
-            
-        layout.addWidget(self.combo_regions)
-        
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
-        self.setLayout(layout)
+from app.ui.dialogs.local_dialog import LocalDialog
+from app.ui.dialogs.disease_dialog import DiseaseDialog
+from app.ui.styles import BTN_SUCCESS, BTN_DANGER
 
-    def get_data(self):
-        return {
-            'name': self.line_name.text(),
-            'region_id': self.combo_regions.currentData()
-        }
-
-# --- НОВЫЙ ДИАЛОГ ДЛЯ БОЛЕЗНИ ---
-class DiseaseDialog(QDialog):
-    def __init__(self, db_manager, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Додати хворобу")
-        self.setFixedSize(350, 200)
-        
-        layout = QVBoxLayout()
-        
-        # Код МКХ
-        layout.addWidget(QLabel("Код МКХ (напр. J10):"))
-        self.inp_code = QLineEdit()
-        layout.addWidget(self.inp_code)
-
-        # Назва
-        layout.addWidget(QLabel("Назва хвороби:"))
-        self.inp_name = QLineEdit()
-        layout.addWidget(self.inp_name)
-        
-        # Категорія
-        layout.addWidget(QLabel("Категорія:"))
-        self.combo_cat = QComboBox()
-        cats = db_manager.get_all_ill_categories()
-        for c in cats:
-            self.combo_cat.addItem(f"{c['category_name']}", c['category_id'])
-            
-        layout.addWidget(self.combo_cat)
-        
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.accepted.connect(self.accept)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
-        self.setLayout(layout)
-
-    def get_data(self):
-        return {
-            'ccode': self.inp_code.text().strip(),
-            'name': self.inp_name.text().strip(),
-            'category_id': self.combo_cat.currentData()
-        }
-
-# --- ОСНОВНОЙ КЛАСС ---
 class DirectoriesView(QWidget):
     def __init__(self, db_manager):
         super().__init__()
@@ -126,6 +55,8 @@ class DirectoriesView(QWidget):
         btn_add.clicked.connect(self.add_category)
         btn_del = QPushButton("Видалити")
         btn_del.clicked.connect(self.delete_category)
+        btn_add.setStyleSheet(BTN_SUCCESS)     
+        btn_del.setStyleSheet(BTN_DANGER) 
         btn_layout.addWidget(btn_add)
         btn_layout.addWidget(btn_del)
         btn_layout.addStretch()
@@ -172,6 +103,8 @@ class DirectoriesView(QWidget):
         btn_add.clicked.connect(self.add_disease)
         btn_del = QPushButton("Видалити")
         btn_del.clicked.connect(self.delete_disease)
+        btn_add.setStyleSheet(BTN_SUCCESS)     
+        btn_del.setStyleSheet(BTN_DANGER) 
         btn_layout.addWidget(btn_add)
         btn_layout.addWidget(btn_del)
         btn_layout.addStretch()
@@ -232,6 +165,8 @@ class DirectoriesView(QWidget):
         btn_add.clicked.connect(self.add_region)
         btn_del = QPushButton("Видалити")
         btn_del.clicked.connect(self.delete_region)
+        btn_add.setStyleSheet(BTN_SUCCESS)     
+        btn_del.setStyleSheet(BTN_DANGER) 
         btn_layout.addWidget(btn_add)
         btn_layout.addWidget(btn_del)
         btn_layout.addStretch()
@@ -283,6 +218,8 @@ class DirectoriesView(QWidget):
         btn_add.clicked.connect(self.add_local)
         btn_del = QPushButton("Видалити")
         btn_del.clicked.connect(self.delete_local)
+        btn_add.setStyleSheet(BTN_SUCCESS)     
+        btn_del.setStyleSheet(BTN_DANGER) 
         btn_layout.addWidget(btn_add)
         btn_layout.addWidget(btn_del)
         btn_layout.addStretch()

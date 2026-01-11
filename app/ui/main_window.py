@@ -15,6 +15,7 @@ from app.ui.views.dir import DirectoriesView
 from app.ui.views.patients import PatientsView
 from app.ui.views.admins import AdminsView
 from app.ui.views.illness import IllnessView
+from app.ui.styles import SIDEBAR_STYLE, BTN_DANGER
 
 class PlaceholderView(QWidget):
     def __init__(self, title):
@@ -67,10 +68,7 @@ class MainWindow(QMainWindow):
 
         logout_btn = QPushButton("Вийти")
         logout_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        logout_btn.setStyleSheet("""
-            QPushButton { background-color: #c0392b; border: none; padding: 5px 15px; border-radius: 3px; color: white; }
-            QPushButton:hover { background-color: #e74c3c; }
-        """)
+        logout_btn.setStyleSheet(BTN_DANGER)
         logout_btn.clicked.connect(self.logout)
 
         header_layout.addWidget(app_title)
@@ -83,7 +81,7 @@ class MainWindow(QMainWindow):
 
     def setup_navigation(self):
         self.nav_frame = QFrame()
-        self.nav_frame.setStyleSheet("background-color: #ecf0f1; border-bottom: 1px solid #bdc3c7;")
+        self.nav_frame.setStyleSheet(SIDEBAR_STYLE)
         self.nav_frame.setFixedHeight(60)
         self.nav_layout = QHBoxLayout(self.nav_frame)
         self.nav_layout.setContentsMargins(10, 5, 10, 5)
@@ -93,7 +91,6 @@ class MainWindow(QMainWindow):
 
     def add_nav_button(self, text, index):
         btn = QPushButton(text)
-        btn.setFixedSize(120, 40)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
         btn.setStyleSheet("""
             QPushButton {

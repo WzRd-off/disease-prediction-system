@@ -5,8 +5,9 @@ from PyQt6.QtWidgets import (
     QTableWidget, QHeaderView, QTableWidgetItem
 )
 
-from app.database.db_manager import DatabaseManager
 from app.ui.dialogs.clinic_dialog import ClinicDialog
+from app.ui.styles import BTN_SUCCESS, BTN_DANGER
+
 
 class ClinicsView(QWidget):
     def __init__(self, db_manager):
@@ -27,6 +28,8 @@ class ClinicsView(QWidget):
         self.btn_add = QPushButton("Додати клініку")
         self.btn_edit = QPushButton("Редагувати")
         self.btn_delete = QPushButton("Видалити")
+        self.btn_add.setStyleSheet(BTN_SUCCESS)     
+        self.btn_delete.setStyleSheet(BTN_DANGER) 
         
         for btn in [self.btn_add, self.btn_edit, self.btn_delete]:
             btn.setCursor(Qt.CursorShape.PointingHandCursor)

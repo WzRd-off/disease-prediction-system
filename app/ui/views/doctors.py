@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui.dialogs.doctor_dialog import DoctorDialog
+from app.ui.styles import BTN_SUCCESS, BTN_DANGER
 
 class DoctorsView(QWidget):
     def __init__(self, user, db_manager):
@@ -24,7 +25,8 @@ class DoctorsView(QWidget):
         self.btn_add = QPushButton("Додати лікаря")
         self.btn_edit = QPushButton("Редагувати")
         self.btn_delete = QPushButton("Видалити")
-        self.btn_add.setStyleSheet("background-color: #27ae60; color: white;")
+        self.btn_add.setStyleSheet(BTN_SUCCESS)     
+        self.btn_delete.setStyleSheet(BTN_DANGER) 
         
         btn_layout.addWidget(self.btn_add)
         btn_layout.addWidget(self.btn_edit)

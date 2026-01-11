@@ -51,7 +51,7 @@ APP_STYLE = f"""
         color: white;
         border: none;
         border-radius: 5px;
-        padding: 8px 16px;
+        padding: 8px 8px;
         font-weight: bold;
     }}
     QPushButton:hover {{

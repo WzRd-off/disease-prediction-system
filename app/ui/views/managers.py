@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui.dialogs.manager_dialog import ManagerDialog
+from app.ui.styles import BTN_SUCCESS, BTN_DANGER
 
 class ManagersView(QWidget):
     def __init__(self, db_manager):
@@ -21,6 +22,8 @@ class ManagersView(QWidget):
         self.btn_add = QPushButton("Додати менеджера")
         self.btn_edit = QPushButton("Редагувати")
         self.btn_delete = QPushButton("Видалити")
+        self.btn_add.setStyleSheet(BTN_SUCCESS)     
+        self.btn_delete.setStyleSheet(BTN_DANGER) 
         
         btn_layout.addWidget(self.btn_add)
         btn_layout.addWidget(self.btn_edit)

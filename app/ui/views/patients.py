@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import (
 )
 
 from app.ui.dialogs.patient_dialog import PatientDialog
+from app.ui.styles import BTN_SUCCESS, BTN_DANGER
 
 class PatientsView(QWidget):
     def __init__(self, user, db_manager):
@@ -29,6 +30,9 @@ class PatientsView(QWidget):
         self.btn_edit = QPushButton("Редагувати")
         self.btn_delete = QPushButton("Видалити")
         self.btn_refresh = QPushButton("Оновити")
+        self.btn_add.setStyleSheet(BTN_SUCCESS)     
+        self.btn_delete.setStyleSheet(BTN_DANGER)   
+
         
         self.btn_add.setStyleSheet("background-color: #27ae60; color: white;")
         
@@ -54,6 +58,7 @@ class PatientsView(QWidget):
         self.btn_edit.clicked.connect(self.edit_patient)
         self.btn_delete.clicked.connect(self.delete_patient)
         self.btn_refresh.clicked.connect(self.refresh_table)
+        
 
         self.setLayout(layout)
 

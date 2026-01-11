@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (
     QLabel, QPushButton, QTableWidget, QHeaderView, QTableWidgetItem
 )
 from app.ui.dialogs.illness_dialog import IllnessDialog
+from app.ui.styles import BTN_SUCCESS, BTN_DANGER
 
 class IllnessView(QWidget):
     def __init__(self, user, db_manager):
@@ -23,8 +24,8 @@ class IllnessView(QWidget):
         self.btn_add = QPushButton("Новий запис (Прийом)")
         self.btn_edit = QPushButton("Редагувати")
         self.btn_delete = QPushButton("Видалити")
-        
-        self.btn_add.setStyleSheet("background-color: #27ae60; color: white;")
+        self.btn_add.setStyleSheet(BTN_SUCCESS)     
+        self.btn_delete.setStyleSheet(BTN_DANGER) 
         
         btn_layout.addWidget(self.btn_add)
         btn_layout.addWidget(self.btn_edit)
