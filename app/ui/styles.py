@@ -38,11 +38,48 @@ APP_STYLE = f"""
     QLineEdit:focus, QDateEdit:focus, QComboBox:focus, QTextEdit:focus {{
         border: 2px solid {COLORS['primary']};
     }}
+    
+        /* Списки (QListWidget) - ДЛЯ ВИБОРУ ХВОРОБ */
+    QListWidget {{
+        background-color: {COLORS['card_bg']};
+        border: 1px solid {COLORS['border']};
+        border-radius: 5px;
+        padding: 5px;
+        outline: none; /* Прибирає пунктирну рамку фокусу */
+    }}
+    QListWidget::item {{
+        padding: 5px;
+        border-radius: 3px;
+        color: {COLORS['text']};
+    }}
+    /* Стан наведення */
+    QListWidget::item:hover {{
+        background-color: #ecf0f1; 
+    }}
+    /* Стан вибраного елемента (активний) */
+    QListWidget::item:selected {{
+        background-color: {COLORS['primary']};
+        color: white;
+    }}
+    /* Стан вибраного, але коли фокус на іншому елементі (все одно залишаємо кольоровим) */
+    QListWidget::item:selected:!active {{
+        background-color: {COLORS['primary']};
+        color: white;
+    }}
 
     /* Выпадающий список */
     QComboBox::drop-down {{
         border: 0px;
         width: 20px;
+    }}
+    
+    QComboBox QAbstractItemView {{
+        border: 1px solid {COLORS['border']};
+        background-color: {COLORS['card_bg']};
+        selection-background-color: {COLORS['primary']};
+        selection-color: white;
+        outline: none; /* Убирает пунктирную обводку */
+        padding: 5px;
     }}
     
     /* Кнопки (QPushButton) */

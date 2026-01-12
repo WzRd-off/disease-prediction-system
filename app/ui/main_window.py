@@ -17,16 +17,6 @@ from app.ui.views.admins import AdminsView
 from app.ui.views.illness import IllnessView
 from app.ui.styles import SIDEBAR_STYLE, BTN_DANGER
 
-class PlaceholderView(QWidget):
-    def __init__(self, title):
-        super().__init__()
-        layout = QVBoxLayout()
-        label = QLabel(f"Экран: {title}\n(Функционал в разработке)")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label.setStyleSheet("font-size: 20px; color: gray; font-weight: bold;")
-        layout.addWidget(label)
-        self.setLayout(layout)
-
 class MainWindow(QMainWindow):
     def __init__(self, user, db_manager):
         super().__init__()
@@ -103,11 +93,11 @@ class MainWindow(QMainWindow):
         self.nav_layout.addWidget(btn)
 
     def init_role_based_ui(self):
-        # Создаем общие views
+        # Oбщие views
 
         self.profile_view = ProfileView(self.user, self.db_manager) 
-        self.statistic_view = StatisticView()
-        self.prediction_view = PredictionView()
+        self.statistic_view = StatisticView(self.user, self.db_manager)
+        self.prediction_view = PredictionView(self.db_manager)
         self.directories_view = DirectoriesView(self.db_manager)
 
 
@@ -123,11 +113,10 @@ class MainWindow(QMainWindow):
 
     def setup_admin_ui(self):
         # 0. Clinics (Главная)
-        # ClinicsView пока сам создает db_manager внутри себя (временно), но работает
         clinics_view = ClinicsView(self.db_manager) 
         self.content_stack.addWidget(clinics_view)
         
-        # 1. Directories (Используем созданный выше экземпляр)
+        # 1. Directories
         self.content_stack.addWidget(self.directories_view)
 
         # 2. Managers

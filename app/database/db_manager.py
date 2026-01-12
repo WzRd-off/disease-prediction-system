@@ -271,6 +271,129 @@ class DatabaseManager():
     def change_password(self, user_id, new_pass):
         return self.execute_query("UPDATE users SET password=? WHERE user_id=?", (new_pass, user_id))
 
+# --- СТАТИСТИКА (ОНОВЛЕНО ДЛЯ МУЛЬТИ-КАТЕГОРІЙ) ---
+    def get_statistics_admin(self, date_from, date_to, region_id=None, local_id=None, category_ids=None, disease_codes=None):
+        """
+        Повертає статистику для адміністратора.
+        category_ids: список ID категорій або None
+        """
+        params = [date_from, date_to]
+        
+        query = """
+            SELECT 
+                ic.category_name,
+                r.region_name,
+                COUNT(h.history_id) as count
+            FROM ill_history h
+            JOIN diseases d ON h.ill_code = d.ccode
+            JOIN ill_categories ic ON d.category_id = ic.category_id
+            JOIN locals l ON h.local_id = l.local_id
+            JOIN regions r ON l.region_id = r.region_id
+            WHERE h.visit_date BETWEEN ? AND ?
+        """
+        
+        if region_id:
+            query += " AND r.region_id = ?"
+            params.append(region_id)
+        if local_id:
+            query += " AND l.local_id = ?"
+            params.append(local_id)
+            
+        # ОНОВЛЕНО: Підтримка списку категорій
+        if category_ids and len(category_ids) > 0:
+            placeholders = ','.join('?' * len(category_ids))
+            query += f" AND ic.category_id IN ({placeholders})"
+            params.extend(category_ids)
+            
+        if disease_codes and len(disease_codes) > 0:
+            placeholders = ','.join('?' * len(disease_codes))
+            query += f" AND d.ccode IN ({placeholders})"
+            params.extend(disease_codes)
+
+        query += """
+            GROUP BY ic.category_name, r.region_name
+            ORDER BY count DESC
+        """
+        
+        return self.execute_query(query, tuple(params), fetch_all=True)
+
+    def get_statistics_clinic(self, clinic_id, date_from, date_to, category_ids=None, disease_codes=None):
+        """
+        Повертає статистику для клініки.
+        category_ids: список ID категорій або None
+        """
+        params = [clinic_id, date_from, date_to]
+        
+        query = """
+            SELECT 
+                ic.category_name,
+                COUNT(h.history_id) as count
+            FROM ill_history h
+            JOIN patients p ON h.patient_code = p.rnkop_code
+            JOIN users u ON p.doctor_id = u.user_id
+            JOIN diseases d ON h.ill_code = d.ccode
+            JOIN ill_categories ic ON d.category_id = ic.category_id
+            WHERE u.clinic_id = ? AND h.visit_date BETWEEN ? AND ?
+        """
+        
+        # ОНОВЛЕНО: Підтримка списку категорій
+        if category_ids and len(category_ids) > 0:
+            placeholders = ','.join('?' * len(category_ids))
+            query += f" AND ic.category_id IN ({placeholders})"
+            params.extend(category_ids)
+            
+        if disease_codes and len(disease_codes) > 0:
+            placeholders = ','.join('?' * len(disease_codes))
+            query += f" AND d.ccode IN ({placeholders})"
+            params.extend(disease_codes)
+
+        query += """
+            GROUP BY ic.category_name
+            ORDER BY count DESC
+        """
+        return self.execute_query(query, tuple(params), fetch_all=True)
+    
+    def get_top_diseases_admin(self, date_from, date_to, limit=10):
+        """Для графіка: ТОП-10 (Хвороба + Регіон)"""
+        query = """
+            SELECT 
+                d.ill_name || ' (' || r.region_name || ')' as label,
+                COUNT(h.history_id) as count
+            FROM ill_history h
+            JOIN diseases d ON h.ill_code = d.ccode
+            JOIN locals l ON h.local_id = l.local_id
+            JOIN regions r ON l.region_id = r.region_id
+            WHERE h.visit_date BETWEEN ? AND ?
+            GROUP BY d.ill_name, r.region_name
+            ORDER BY count DESC
+            LIMIT ?
+        """
+        return self.execute_query(query, (date_from, date_to, limit), fetch_all=True)
+
+    def get_top_categories_clinic(self, clinic_id, date_from, date_to, limit=10):
+        """Для графіка: ТОП-10 Категорій у клініці"""
+        query = """
+            SELECT 
+                ic.category_name as label,
+                COUNT(h.history_id) as count
+            FROM ill_history h
+            JOIN patients p ON h.patient_code = p.rnkop_code
+            JOIN users u ON p.doctor_id = u.user_id
+            JOIN diseases d ON h.ill_code = d.ccode
+            JOIN ill_categories ic ON d.category_id = ic.category_id
+            WHERE u.clinic_id = ? AND h.visit_date BETWEEN ? AND ?
+            GROUP BY ic.category_name
+            ORDER BY count DESC
+            LIMIT ?
+        """
+        return self.execute_query(query, (clinic_id, date_from, date_to, limit), fetch_all=True)
+
+    def get_locals_by_region(self, region_id):
+         return self.execute_query("SELECT * FROM locals WHERE region_id=?", (region_id,), fetch_all=True)
+
+    def get_diseases_by_category(self, category_id):
+        return self.execute_query("SELECT * FROM diseases WHERE category_id=?", (category_id,), fetch_all=True)
+
     def _update_patient_status_auto(self, patient_code, history_status, is_chronic):
         """
         Автоматически обновляет статус пациента в таблице patients
