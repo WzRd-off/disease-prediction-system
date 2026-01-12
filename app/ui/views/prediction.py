@@ -3,33 +3,18 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
     QTableWidget, QHeaderView, QTableWidgetItem,
     QComboBox, QDateEdit, QPushButton, QGroupBox,
-    QSpinBox, QListWidget, QAbstractItemView, QListWidgetItem, QMessageBox
+    QListWidget, QAbstractItemView, QListWidgetItem, QMessageBox
 )
 import pyqtgraph as pg
 from app.ui.styles import BTN_SUCCESS
 from datetime import datetime, timedelta
 
 class PredictionView(QWidget):
-    def __init__(self, db_manager): # Оновлено: отримуємо db_manager
+    def __init__(self, db_manager):
         super().__init__()
         self.db_manager = db_manager
-        
-        # Ініціалізація змінних (за замовчуванням адмін, поки не передано)
-        self.role = 'admin' 
-        self.clinic_id = None
 
         self.init_ui()
-
-    def set_user_context(self, user):
-        """Встановлюємо користувача"""
-        self.user = user
-        self.role = user['role']
-        self.clinic_id = user.get('clinic_id')
-        
-        if self.role != 'admin':
-            # Можна приховати/відключити фільтри регіону для не-адмінів
-            self.combo_region.setEnabled(False)
-            self.combo_local.setEnabled(False)
 
     def init_ui(self):
         main_layout = QVBoxLayout()
