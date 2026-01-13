@@ -56,8 +56,7 @@ class ChangePasswordDialog(QDialog):
             return
 
         # 3. Сохраняем
-        new_hash = self.auth_service.hash_password(new_pass)
-        self.db_manager.change_password(self.user_id, new_hash)
+        self.db_manager.change_password(self.user_id, new_pass)
         
         QMessageBox.information(self, "Успіх", "Пароль успішно змінено.")
         self.accept()

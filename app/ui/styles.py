@@ -23,9 +23,10 @@ APP_STYLE = f"""
     }}
 
     /* Главное окно */
-    QMainWindow {{
+    QMainWindow, QDialog {{
         background-color: {COLORS['background']};
     }}
+
 
     /* Поля ввода (QLineEdit, QDateEdit, QComboBox) */
     QLineEdit, QDateEdit, QComboBox, QTextEdit {{
@@ -35,11 +36,12 @@ APP_STYLE = f"""
         padding: 8px; /* Больше воздуха */
         selection-background-color: {COLORS['primary']};
     }}
+
     QLineEdit:focus, QDateEdit:focus, QComboBox:focus, QTextEdit:focus {{
         border: 2px solid {COLORS['primary']};
     }}
-    
-        /* Списки (QListWidget) - ДЛЯ ВИБОРУ ХВОРОБ */
+
+    /* Списки (QListWidget) - ДЛЯ ВИБОРУ ХВОРОБ */
     QListWidget {{
         background-color: {COLORS['card_bg']};
         border: 1px solid {COLORS['border']};
@@ -160,6 +162,51 @@ APP_STYLE = f"""
     }}
     QScrollBar::handle:vertical:hover {{
         background: #a6acaf;
+    }}
+        /* --- КАЛЕНДАР (QCalendarWidget) --- */
+    QCalendarWidget QWidget {{
+        background-color: white; 
+        color: black;
+    }}
+    QCalendarWidget QTableView {{
+        background-color: white;
+        color: black;
+        selection-background-color: {COLORS['primary']};
+        selection-color: white;
+        gridline-color: {COLORS['border']};
+    }}
+    QCalendarWidget QToolButton {{
+        color: {COLORS['text']};
+        background-color: transparent;
+        border: none;
+        margin: 2px;
+        font-weight: bold;
+        icon-size: 20px;
+    }}
+    QCalendarWidget QToolButton:hover {{
+        background-color: #ecf0f1;
+        border-radius: 4px;
+    }}
+    QCalendarWidget QSpinBox {{
+        background-color: white;
+        color: black;
+        border: 1px solid {COLORS['border']};
+        border-radius: 3px;
+        selection-background-color: {COLORS['primary']};
+        selection-color: white;
+    }}
+    QCalendarWidget QMenu {{
+        background-color: white;
+        color: black;
+    }}
+
+    /* --- MESSAGE BOX (QMessageBox) --- */
+    QMessageBox {{
+        background-color: white;
+    }}
+    QMessageBox QLabel {{
+        color: {COLORS['text']};
+        font-size: 14px;
     }}
 """
 

@@ -198,18 +198,15 @@ class PredictionView(QWidget):
         params = [start_history_date] + disease_codes
         
         # Додаткові фільтри локації
-        if self.role == 'admin':
-            reg_id = self.combo_region.currentData()
-            loc_id = self.combo_local.currentData()
-            if reg_id:
-                query += " AND h.local_id IN (SELECT local_id FROM locals WHERE region_id = ?)"
-                params.append(reg_id)
-            if loc_id:
-                # Оскільки local_id вже в параметрах, додаємо акуратно
-                pass # Спрощено, щоб не ламати параметри
-        else:
-            query += " AND h.patient_code IN (SELECT rnkop_code FROM patients WHERE doctor_id IN (SELECT user_id FROM users WHERE clinic_id = ?))"
-            params.append(self.clinic_id)
+
+        reg_id = self.combo_region.currentData()
+        loc_id = self.combo_local.currentData()
+        if reg_id:
+            query += " AND h.local_id IN (SELECT local_id FROM locals WHERE region_id = ?)"
+            params.append(reg_id)
+        if loc_id:
+            # Оскільки local_id вже в параметрах, додаємо акуратно
+            pass # Спрощено, щоб не ламати параметри
 
         query += " GROUP BY h.visit_date ORDER BY h.visit_date ASC"
         

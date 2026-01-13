@@ -82,5 +82,3 @@ CREATE TABLE IF NOT EXISTS ill_history (
 
 -- Додаємо дефолтного головного адміністратора
 -- Пароль (в реальності має бути хешований): admin
-INSERT OR IGNORE INTO users (login, password, full_name, role, clinic_id) 
-VALUES ('admin', 'admin', 'Main Administrator', 'admin', NULL);
