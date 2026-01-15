@@ -18,7 +18,7 @@ class DoctorsView(QWidget):
         layout = QVBoxLayout()
         
         header = QLabel(f"Керування лікарями (Клініка ID: {self.clinic_id})")
-        header.setStyleSheet("font-size: 16px; font-weight: bold;")
+        header.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
         layout.addWidget(header)
 
         btn_layout = QHBoxLayout()

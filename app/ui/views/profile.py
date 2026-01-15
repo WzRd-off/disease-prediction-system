@@ -15,12 +15,13 @@ class ProfileView(QWidget):
     def init_ui(self):
 
         layout = QVBoxLayout()
-        
         header = QLabel("Профіль користувача")
+        header.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
         layout.addWidget(header)
 
         # Контейнер для формы (белая карточка)
         card = QFrame()
+        card.setFixedWidth(500)
         form_layout = QVBoxLayout(card)
 
         # Роль (Read-only)
@@ -64,10 +65,10 @@ class ProfileView(QWidget):
         btn_layout.addStretch()
         
         form_layout.addLayout(btn_layout)
-        
-        layout.addWidget(card)
+       
+        layout.addWidget(card, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch()
-        
+
         self.setLayout(layout)
 
     def save_changes(self):

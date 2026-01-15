@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
 
         self.profile_view = ProfileView(self.user, self.db_manager) 
         self.statistic_view = StatisticView(self.user, self.db_manager)
-        self.prediction_view = PredictionView(self.db_manager)
+        self.prediction_view = PredictionView(self.user, self.db_manager)
         self.directories_view = DirectoriesView(self.db_manager)
 
 

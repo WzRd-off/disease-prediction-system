@@ -15,7 +15,9 @@ class DirectoriesView(QWidget):
         self.db_manager = db_manager
         
         layout = QVBoxLayout()
-        layout.addWidget(QLabel("Довідники системи"))
+        header = QLabel("Довідники системи")
+        header.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
+        layout.addWidget(header)
         
         # Вкладки
         self.tabs = QTabWidget()

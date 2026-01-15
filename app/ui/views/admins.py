@@ -10,7 +10,7 @@ class AdminsView(QWidget):
         layout = QVBoxLayout()
         
         header = QLabel("Адміністратори Системи")
-        header.setStyleSheet("font-size: 16px; font-weight: bold;")
+        header.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
         layout.addWidget(header)
 
         self.table = QTableWidget()

@@ -271,3 +271,40 @@ SIDEBAR_STYLE = f"""
         font-weight: bold;
     }}
 """
+
+SEARCH_INPUT_STYLE = f"""
+    QLineEdit {{
+        border: 2px solid #3e77aa; 
+        border-radius: 8px;
+        padding-left: 10px;
+        font-size: 14px;
+        color: {COLORS['text']};
+        background-color: white;
+    }}
+    QLineEdit:focus {{
+        border: 2px solid {COLORS['accent']};
+    }}
+"""
+
+CHECKBOX_STYLE = f"""
+    QCheckBox {{
+        spacing: 10px;
+        font-size: 14px;
+        color: {COLORS['text']};
+    }}
+    QCheckBox::indicator {{
+        width: 20px;
+        height: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: white;
+    }}
+    QCheckBox::indicator:checked {{
+        background-color: {COLORS['success']};
+        border: 1px solid {COLORS['success']};
+        /* Можна додати іконку галочки, якщо є ресурс, або просто колір */
+    }}
+    QCheckBox::indicator:hover {{
+        border: 1px solid {COLORS['primary']};
+    }}
+"""

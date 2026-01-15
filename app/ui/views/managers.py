@@ -16,6 +16,7 @@ class ManagersView(QWidget):
         layout = QVBoxLayout()
         
         header = QLabel("Керування менеджерами")
+        header.setStyleSheet("font-size: 16px; font-weight: bold; margin-bottom: 10px;")
         layout.addWidget(header)
 
         btn_layout = QHBoxLayout()

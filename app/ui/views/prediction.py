@@ -3,27 +3,30 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
     QTableWidget, QHeaderView, QTableWidgetItem,
     QComboBox, QDateEdit, QPushButton, QGroupBox,
-    QListWidget, QAbstractItemView, QListWidgetItem, QMessageBox
+    QSpinBox, QMessageBox
 )
 import pyqtgraph as pg
 from app.ui.styles import BTN_SUCCESS
+from app.ui.widgets.disease_selector import DiseaseSelector
 from datetime import datetime, timedelta
 
 class PredictionView(QWidget):
-    def __init__(self, db_manager):
+    def __init__(self, user, db_manager):
         super().__init__()
+        self.user = user
         self.db_manager = db_manager
-
+        # Роль больше не сохраняем и не используем для логики отображения
+        
         self.init_ui()
 
     def init_ui(self):
         main_layout = QVBoxLayout()
 
-        # 1. ПАНЕЛЬ НАЛАШТУВАНЬ ПРОГНОЗУ (Зверху)
+        # 1. ПАНЕЛЬ НАЛАШТУВАНЬ
         filter_group = QGroupBox("Параметри Прогнозування")
         filter_layout = QHBoxLayout()
 
-        # --- БЛОК 1: Локація ---
+        # БЛОК 1: Локація
         loc_layout = QVBoxLayout()
         loc_layout.addWidget(QLabel("Регіон:"))
         self.combo_region = QComboBox()
@@ -36,31 +39,30 @@ class PredictionView(QWidget):
         self.combo_local = QComboBox()
         self.combo_local.addItem("Всі", None)
         loc_layout.addWidget(self.combo_local)
+        
+        # Убрана проверка роли, фильтры доступны всем
+            
         filter_layout.addLayout(loc_layout)
 
-        # --- БЛОК 2: Період Прогнозу ---
+        # БЛОК 2: Період
         date_layout = QVBoxLayout()
-        
-        # Дата початку (фіксована - сьогодні)
-        date_layout.addWidget(QLabel("Дата початку (Сьогодні):"))
+        date_layout.addWidget(QLabel("Початок (Сьогодні):"))
         self.date_from = QDateEdit()
         self.date_from.setCalendarPopup(True)
         self.date_from.setDate(QDate.currentDate())
-        self.date_from.setReadOnly(True) # Не можна змінювати минуле для прогнозу
-        self.date_from.setEnabled(False) # Візуально показуємо, що це фіксовано
+        self.date_from.setReadOnly(True)
+        self.date_from.setEnabled(False)
         date_layout.addWidget(self.date_from)
         
-        # Дата кінця (вибір користувача, за замовчуванням +1 місяць)
         date_layout.addWidget(QLabel("Прогноз ДО дати:"))
         self.date_to = QDateEdit()
         self.date_to.setCalendarPopup(True)
-        self.date_to.setDate(QDate.currentDate().addMonths(1)) # За замовчуванням + місяць
-        self.date_to.setMinimumDate(QDate.currentDate().addDays(1)) # Мінімум завтра
+        self.date_to.setDate(QDate.currentDate().addMonths(1))
+        self.date_to.setMinimumDate(QDate.currentDate().addDays(1))
         date_layout.addWidget(self.date_to)
-        
         filter_layout.addLayout(date_layout)
 
-        # --- БЛОК 3: Хвороби ---
+        # БЛОК 3: Категорія та Хвороби
         cat_layout = QVBoxLayout()
         cat_layout.addWidget(QLabel("Категорія:"))
         self.combo_category = QComboBox()
@@ -68,24 +70,24 @@ class PredictionView(QWidget):
         self._load_categories()
         self.combo_category.currentIndexChanged.connect(self._on_category_changed)
         cat_layout.addWidget(self.combo_category)
+        cat_layout.addStretch()
         filter_layout.addLayout(cat_layout)
 
+        # НОВИЙ ВІДЖЕТ ХВОРОБ
         disease_layout = QVBoxLayout()
-        disease_layout.addWidget(QLabel("Хвороби (мульти):"))
-        self.list_diseases = QListWidget()
-        self.list_diseases.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
-        self.list_diseases.setFixedHeight(80)
+        disease_layout.addWidget(QLabel("Хвороби:"))
+        self.disease_selector = DiseaseSelector()
+        self.disease_selector.setMinimumWidth(250)
+        self.disease_selector.setMaximumHeight(150)
         self._load_diseases()
-        disease_layout.addWidget(self.list_diseases)
+        disease_layout.addWidget(self.disease_selector)
         filter_layout.addLayout(disease_layout)
         
-        # Кнопка Розрахувати
+        # Кнопка
+        btn_layout = QVBoxLayout()
         self.btn_calculate = QPushButton("Розрахувати")
         self.btn_calculate.setStyleSheet(BTN_SUCCESS)
         self.btn_calculate.clicked.connect(self.calculate_prediction)
-        
-        # Додаємо кнопку в кінець лейауту
-        btn_layout = QVBoxLayout()
         btn_layout.addStretch()
         btn_layout.addWidget(self.btn_calculate)
         filter_layout.addLayout(btn_layout)
@@ -93,20 +95,18 @@ class PredictionView(QWidget):
         filter_group.setLayout(filter_layout)
         main_layout.addWidget(filter_group)
 
-        # 2. ЦЕНТРАЛЬНА ЧАСТИНА (Графік + Таблиця)
+        # 2. ГРАФІК ТА ТАБЛИЦЯ
         content_layout = QHBoxLayout()
         
-        # Графік (Великий, зліва)
         self.plot_widget = pg.PlotWidget()
         self.plot_widget.setBackground('w')
         self.plot_widget.setTitle("Графік Прогнозу", color="k", size="12pt")
         self.plot_widget.setLabel('left', 'Кількість хворих')
-        self.plot_widget.setLabel('bottom', 'Період (Тижні)')
+        self.plot_widget.setLabel('bottom', 'Період (Час)')
         self.plot_widget.showGrid(x=True, y=True)
         self.plot_widget.addLegend()
         content_layout.addWidget(self.plot_widget, stretch=2)
 
-        # Таблиця (Справа, вужча)
         self.table = QTableWidget()
         self.table.setColumnCount(2)
         self.table.setHorizontalHeaderLabels(["Дата", "Прогноз"])
@@ -115,14 +115,14 @@ class PredictionView(QWidget):
 
         main_layout.addLayout(content_layout)
 
-        # 3. НИЖНЯ ПАНЕЛЬ (Пояснення)
-        self.lbl_summary = QLabel("Оберіть хвороби та дату закінчення прогнозу, потім натисніть 'Розрахувати'.")
+        # 3. НИЖНЯЯ ПАНЕЛЬ
+        self.lbl_summary = QLabel("Оберіть хвороби та дату закінчення прогнозу.")
         self.lbl_summary.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px; color: #7f8c8d;")
         main_layout.addWidget(self.lbl_summary)
 
         self.setLayout(main_layout)
 
-    # --- ЗАВАНТАЖЕННЯ ДАНИХ (Копія логіки фільтрів) ---
+    # --- ЗАВАНТАЖЕННЯ ДАНИХ ---
     def _load_regions(self):
         regions = self.db_manager.get_all_regions()
         for r in regions:
@@ -143,7 +143,6 @@ class PredictionView(QWidget):
             self.combo_category.addItem(c['category_name'], c['category_id'])
 
     def _on_category_changed(self):
-        self.list_diseases.clear()
         category_id = self.combo_category.currentData()
         
         if category_id:
@@ -151,25 +150,21 @@ class PredictionView(QWidget):
         else:
             diseases = self.db_manager.get_all_diseases()
             
-        for d in diseases:
-            item = QListWidgetItem(f"{d['ill_name']} ({d['ccode']})")
-            item.setData(Qt.ItemDataRole.UserRole, d['ccode'])
-            self.list_diseases.addItem(item)
+        self.disease_selector.update_items(diseases)
 
     def _load_diseases(self):
         self._on_category_changed()
 
-    # --- ЛОГІКА РОЗРАХУНКУ ПРОГНОЗУ ---
+    # --- ЛОГІКА ---
     def calculate_prediction(self):
-        # 1. Збираємо вхідні дані
-        selected_items = self.list_diseases.selectedItems()
-        disease_codes = [item.data(Qt.ItemDataRole.UserRole) for item in selected_items]
+        # ОТРИМУЄМО ДАНІ З НОВОГО ВІДЖЕТА
+        disease_codes = self.disease_selector.get_selected_codes()
         
         if not disease_codes:
             QMessageBox.warning(self, "Увага", "Оберіть хоча б одну хворобу!")
             return
 
-        # Розрахунок періоду (m) на основі дат
+        # Розрахунок періоду
         start_qdate = self.date_from.date()
         end_qdate = self.date_to.date()
         
@@ -178,13 +173,9 @@ class PredictionView(QWidget):
             QMessageBox.warning(self, "Помилка", "Дата закінчення має бути пізніше сьогоднішньої!")
             return
             
-        # Конвертуємо дні в тижні (округлення вгору)
         forecast_period_weeks = (days_diff + 6) // 7 
-        
-        history_weeks = 10 # n (кількість минулих тижнів для аналізу)
+        history_weeks = 10 
 
-        # 2. Отримуємо історичні дані з БД
-        # Визначаємо дати
         today = datetime.now().date()
         start_history_date = today - timedelta(weeks=history_weeks + 2) 
         
@@ -197,16 +188,17 @@ class PredictionView(QWidget):
         """
         params = [start_history_date] + disease_codes
         
-        # Додаткові фільтри локації
-
+        # Використовуємо фільтри регіону/району для ВСІХ
         reg_id = self.combo_region.currentData()
-        loc_id = self.combo_local.currentData()
+        local_id = self.combo_local.currentData()
+        
         if reg_id:
             query += " AND h.local_id IN (SELECT local_id FROM locals WHERE region_id = ?)"
             params.append(reg_id)
-        if loc_id:
-            # Оскільки local_id вже в параметрах, додаємо акуратно
-            pass # Спрощено, щоб не ламати параметри
+        
+        if local_id:
+             query += " AND h.local_id = ?"
+             params.append(local_id)
 
         query += " GROUP BY h.visit_date ORDER BY h.visit_date ASC"
         
@@ -218,7 +210,7 @@ class PredictionView(QWidget):
             self.table.setRowCount(0)
             return
 
-        # 3. Обробка даних (Групування по тижнях)
+        # Обробка та Математика (така ж як була)
         data_by_week = {}
         for row in raw_data:
             date_str = row['visit_date']
@@ -239,7 +231,6 @@ class PredictionView(QWidget):
         dates = [x[0] for x in history_slice]
         counts = [x[1] for x in history_slice]
         
-        # 4. Математичний розрахунок
         coeffs = []
         for i in range(1, len(counts)):
             prev = counts[i-1]
@@ -252,42 +243,30 @@ class PredictionView(QWidget):
         x0 = sum(coeffs) / len(coeffs)
         
         weights = list(range(1, len(coeffs) + 1))
+        weighted_sum = sum(x * w for x, w in zip(coeffs, weights))
         total_weight = sum(weights)
-        
-        weighted_sum = 0
-        for x, w in zip(coeffs, weights):
-            weighted_sum += x * w
             
         k_b = weighted_sum / total_weight
         final_k = (x0 + k_b) / 2
         
-        # 5. Генерація прогнозу
         last_value = counts[-1]
-        last_date = dates[-1]
-        
         forecast_dates = []
         forecast_values = []
         
         current_val = last_value
-        current_date = last_date
+        current_date = dates[-1]
         
-        # Прогнозуємо на розраховану кількість тижнів
         for _ in range(forecast_period_weeks):
             current_val = current_val * final_k
             current_date = current_date + timedelta(weeks=1)
-            
-            # Якщо дата вийшла за межі обраної дати "До", зупиняємось (приблизно)
-            if current_date > end_qdate.toPyDate() + timedelta(days=6): # + запас тиждень
+            if current_date > end_qdate + timedelta(days=6):
                 break
-
             forecast_dates.append(current_date)
             forecast_values.append(int(current_val))
 
-        # 6. Візуалізація
         self.plot_widget.clear()
         self.plot_widget.addLegend()
 
-        # Історія (Синій)
         x_hist = range(len(counts))
         ticks = []
         for i, d in enumerate(dates):
@@ -295,7 +274,6 @@ class PredictionView(QWidget):
             
         self.plot_widget.plot(x_hist, counts, pen=pg.mkPen('b', width=2), symbol='o', name="Історія")
         
-        # Прогноз (Червоний)
         x_fore = range(len(counts) - 1, len(counts) + len(forecast_values))
         y_fore = [counts[-1]] + forecast_values
         
@@ -307,15 +285,13 @@ class PredictionView(QWidget):
         ax = self.plot_widget.getAxis('bottom')
         ax.setTicks([ticks])
 
-        # Заповнення таблиці
         self.table.setRowCount(0)
         for i, (d, v) in enumerate(zip(forecast_dates, forecast_values)):
             self.table.insertRow(i)
             self.table.setItem(i, 0, QTableWidgetItem(d.strftime("%Y-%m-%d")))
             self.table.setItem(i, 1, QTableWidgetItem(str(v)))
 
-        # Підсумок
         trend_text = "Зростання" if final_k > 1 else "Спад"
         percent = abs(final_k - 1) * 100
         days_total = (forecast_dates[-1] - dates[-1]).days if forecast_dates else 0
-        self.lbl_summary.setText(f"Прогноз на {days_total} днів ({len(forecast_values)} тижнів). Тренд: {trend_text} на {percent:.1f}% щотижня.")
+        self.lbl_summary.setText(f"Прогноз на {days_total} днів. Тренд: {trend_text} на {percent:.1f}% щотижня.")

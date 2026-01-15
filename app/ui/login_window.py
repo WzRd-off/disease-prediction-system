@@ -11,7 +11,7 @@ class LoginWindow(QMainWindow):
         self.auth_service = AuthService(self.db_manager)
 
         self.setWindowTitle("Login")
-        self.setFixedSize(300, 450)
+        self.setFixedSize(300, 350)
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
