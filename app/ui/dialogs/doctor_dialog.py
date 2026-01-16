@@ -1,3 +1,5 @@
+from PyQt6.QtCore import QRegularExpression
+from PyQt6.QtGui import QRegularExpressionValidator
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QLineEdit, QLabel, 
     QMessageBox, QDialogButtonBox
@@ -9,24 +11,33 @@ class DoctorDialog(QDialog):
         self.doctor = doctor
         
         self.setWindowTitle("Додати лікаря" if not self.doctor else "Редагувати лікаря")
-        self.setFixedSize(350, 350)
+        self.setFixedSize(350, 400)
         
         layout = QVBoxLayout()
         
         layout.addWidget(QLabel("Логін:"))
         self.inp_login = QLineEdit()
+        self.inp_login.setMaxLength(30) # Ограничение: Макс 30 символов
+        # Ограничение: Только английские буквы и цифры
+        self.inp_login.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[a-zA-Z0-9_]+$")))
         layout.addWidget(self.inp_login)
 
         layout.addWidget(QLabel("Пароль:"))
         self.inp_password = QLineEdit()
+        self.inp_password.setMaxLength(50) # Ограничение: Макс 50 символов
         layout.addWidget(self.inp_password)
 
         layout.addWidget(QLabel("ПІБ:"))
         self.inp_full_name = QLineEdit()
+        self.inp_full_name.setMaxLength(100) # Ограничение: Макс 100 символов
         layout.addWidget(self.inp_full_name)
 
         layout.addWidget(QLabel("Телефон:"))
         self.inp_phone = QLineEdit()
+        self.inp_phone.setMaxLength(13) # Ограничение: Макс 13 символов
+        self.inp_phone.setPlaceholderText("+380...")
+        # Ограничение: Только цифры и плюс
+        self.inp_phone.setValidator(QRegularExpressionValidator(QRegularExpression(r"^\+?[0-9]*$")))
         layout.addWidget(self.inp_phone)
         
         self.buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
@@ -43,15 +54,20 @@ class DoctorDialog(QDialog):
             self._fill_data()
 
     def validate_and_accept(self):
-        if not self.inp_login.text().strip():
-            QMessageBox.warning(self, "Помилка", "Логін обов'язковий")
+        # Защита от дурака
+        if len(self.inp_login.text().strip()) < 4:
+            QMessageBox.warning(self, "Помилка", "Логін має бути не менше 4 символів")
             return
-        if not self.inp_password.text().strip():
-            QMessageBox.warning(self, "Помилка", "Пароль обов'язковий")
+        if len(self.inp_password.text().strip()) < 4:
+            QMessageBox.warning(self, "Помилка", "Пароль має бути не менше 4 символів")
             return
         if not self.inp_full_name.text().strip():
             QMessageBox.warning(self, "Помилка", "ПІБ обов'язкове")
             return
+        if len(self.inp_phone.text().strip()) < 10:
+            QMessageBox.warning(self, "Помилка", "Телефон занадто короткий")
+            return
+            
         self.accept()
 
     def get_data(self):

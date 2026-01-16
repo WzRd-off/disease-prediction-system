@@ -1,5 +1,9 @@
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFrame, QHBoxLayout
+from PyQt6.QtCore import Qt, QRegularExpression
+from PyQt6.QtGui import QRegularExpressionValidator
+from PyQt6.QtWidgets import (
+    QWidget, QVBoxLayout, QLabel,
+    QLineEdit, QPushButton, QFrame,
+    QHBoxLayout, QMessageBox)
 
 from app.ui.dialogs.change_pass_dialog import ChangePasswordDialog
 from app.logic.auth_service import AuthService
@@ -38,6 +42,7 @@ class ProfileView(QWidget):
         # ФИО
         form_layout.addWidget(QLabel("ПІБ:"))
         self.inp_fullname = QLineEdit(self.user['full_name'])
+        self.inp_fullname.setMaxLength(100)
         form_layout.addWidget(self.inp_fullname)
 
         #Клиника
@@ -49,6 +54,10 @@ class ProfileView(QWidget):
         # Телефон
         form_layout.addWidget(QLabel("Телефон:"))
         self.inp_phone = QLineEdit(self.user['phone'])
+        self.inp_phone.setMaxLength(13) # Ограничение: Макс 13 символов
+        self.inp_phone.setPlaceholderText("+380...")
+        # Ограничение: Только цифры и плюс
+        self.inp_phone.setValidator(QRegularExpressionValidator(QRegularExpression(r"^\+?[0-9]*$")))
         form_layout.addWidget(self.inp_phone)
 
         # Кнопки действий
@@ -72,9 +81,19 @@ class ProfileView(QWidget):
         self.setLayout(layout)
 
     def save_changes(self):
-        full_name = self.inp_fullname
-        phone = self.inp_phone
-        self.db.update_user_profile(self.user['id'], full_name, phone)
+        if not self.inp_fullname.text().strip():
+            QMessageBox.warning(self, "Помилка", "ПІБ не може бути порожнім")
+            return
+        if len(self.inp_phone.text().strip()) < 10:
+            QMessageBox.warning(self, "Помилка", "Телефон занадто короткий")
+            return
+
+        # ИСПРАВЛЕНО: Передаем .text(), а не сами объекты QLineEdit
+        self.db_manager.update_user_profile(
+            self.user['user_id'], 
+            self.inp_fullname.text(),  # Был self.inp_fullname
+            self.inp_phone.text()      # Был self.inp_phone
+        )
 
     def open_password_dialog(self):
         dialog = ChangePasswordDialog(self.db_manager, self.user['user_id'], self.auth_service, self)
