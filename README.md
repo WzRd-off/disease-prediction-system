@@ -78,7 +78,7 @@ disease-prediction-system/
 
 В командной строке нужно перейти в папку с проектом. Введите команду (замените путь на свой, если он отличается):
 
-cd Desktop\DiseaseSystem
+cd disease-prediction-system
 
 
 Создайте виртуальное окружение командой:
