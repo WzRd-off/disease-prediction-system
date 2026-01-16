@@ -82,3 +82,70 @@ CREATE TABLE IF NOT EXISTS ill_history (
 
 -- Додаємо дефолтного головного адміністратора
 -- Пароль (в реальності має бути хешований): admin
+
+INSERT OR IGNORE INTO users (login, password, full_name, role, clinic_id) 
+VALUES ('admin', 'admin', 'Main Administrator', 'admin', NULL);
+
+-- ... (тут ваші команди CREATE TABLE) ...
+
+-- === ТЕСТОВІ ДАНІ ДЛЯ ПРОГНОЗУВАННЯ (Зима 2025) ===
+
+-- 1. Створюємо базові довідники
+INSERT OR IGNORE INTO regions (region_id, region_name) VALUES (1, 'Київська');
+INSERT OR IGNORE INTO locals (local_id, local_name, region_id) VALUES (1, 'Шевченківський', 1);
+INSERT OR IGNORE INTO ill_categories (category_id, category_name) VALUES (1, 'Інфекційні');
+INSERT OR IGNORE INTO diseases (ccode, ill_name, category_id) VALUES ('J10', 'Грип', 1), ('J00', 'ГРВІ', 1);
+
+-- 1.1. Створюємо Клініку (ВАЖЛИВО: Лікар має належати до клініки)
+INSERT OR IGNORE INTO clinics (clinic_id, clinic_name, local_id, address, email, phone, is_archived) 
+VALUES (1, 'Тестова Клініка "Здоров''я"', 1, 'м. Київ, вул. Тестова, 1', 'test@clinic.com', '044-000-00-00', 0);
+
+-- 2. Створюємо лікаря і привязуємо до клініки ID=1
+INSERT OR IGNORE INTO users (login, password, full_name, role, phone, clinic_id) 
+VALUES ('test_doc', '12345', 'Тестовий Лікар', 'doctor', '000', 1);
+
+-- 3. Додаємо 20 пацієнтів (привязані до test_doc)
+INSERT OR IGNORE INTO patients (rnkop_code, full_name, birth_date, address, phone, doctor_id, status) VALUES 
+('3000000001', 'Пацієнт Тест 1', '1990-01-01', 'Київ', '001', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000002', 'Пацієнт Тест 2', '1991-02-02', 'Київ', '002', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000003', 'Пацієнт Тест 3', '1992-03-03', 'Київ', '003', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000004', 'Пацієнт Тест 4', '1993-04-04', 'Київ', '004', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000005', 'Пацієнт Тест 5', '1994-05-05', 'Київ', '005', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000006', 'Пацієнт Тест 6', '1980-06-06', 'Київ', '006', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000007', 'Пацієнт Тест 7', '1981-07-07', 'Київ', '007', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000008', 'Пацієнт Тест 8', '1982-08-08', 'Київ', '008', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000009', 'Пацієнт Тест 9', '1983-09-09', 'Київ', '009', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000010', 'Пацієнт Тест 10', '1984-10-10', 'Київ', '010', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000011', 'Пацієнт Тест 11', '1985-11-11', 'Київ', '011', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000012', 'Пацієнт Тест 12', '1986-12-12', 'Київ', '012', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000013', 'Пацієнт Тест 13', '1987-01-13', 'Київ', '013', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000014', 'Пацієнт Тест 14', '1988-02-14', 'Київ', '014', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000015', 'Пацієнт Тест 15', '1989-03-15', 'Київ', '015', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000016', 'Пацієнт Тест 16', '2000-04-16', 'Київ', '016', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000017', 'Пацієнт Тест 17', '2001-05-17', 'Київ', '017', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000018', 'Пацієнт Тест 18', '2002-06-18', 'Київ', '018', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000019', 'Пацієнт Тест 19', '2003-07-19', 'Київ', '019', (SELECT user_id FROM users WHERE login='test_doc'), 'sick'),
+('3000000020', 'Пацієнт Тест 20', '2004-08-20', 'Київ', '020', (SELECT user_id FROM users WHERE login='test_doc'), 'sick');
+
+-- 4. Додаємо історію хвороб (Розподіляємо дати з 16.01 по 16.02)
+INSERT OR IGNORE INTO ill_history (patient_code, local_id, ill_code, is_chronic, visit_date, status, prescription) VALUES
+('3000000001', 1, 'J10', 0, '2025-01-16', 'хворіє', 'Тест'),
+('3000000002', 1, 'J10', 0, '2025-01-17', 'хворіє', 'Тест'),
+('3000000003', 1, 'J00', 0, '2025-01-18', 'хворіє', 'Тест'),
+('3000000004', 1, 'J10', 0, '2025-01-19', 'хворіє', 'Тест'),
+('3000000005', 1, 'J10', 0, '2025-01-20', 'хворіє', 'Тест'),
+('3000000006', 1, 'J00', 0, '2025-01-22', 'хворіє', 'Тест'),
+('3000000007', 1, 'J10', 0, '2025-01-24', 'хворіє', 'Тест'),
+('3000000008', 1, 'J10', 0, '2025-01-25', 'хворіє', 'Тест'),
+('3000000009', 1, 'J00', 0, '2025-01-26', 'хворіє', 'Тест'),
+('3000000010', 1, 'J10', 0, '2025-01-28', 'хворіє', 'Тест'),
+('3000000011', 1, 'J10', 0, '2025-01-30', 'хворіє', 'Тест'),
+('3000000012', 1, 'J00', 0, '2025-02-01', 'хворіє', 'Тест'),
+('3000000013', 1, 'J10', 0, '2025-02-02', 'хворіє', 'Тест'),
+('3000000014', 1, 'J10', 0, '2025-02-04', 'хворіє', 'Тест'),
+('3000000015', 1, 'J00', 0, '2025-02-06', 'хворіє', 'Тест'),
+('3000000016', 1, 'J10', 0, '2025-02-08', 'хворіє', 'Тест'),
+('3000000017', 1, 'J10', 0, '2025-02-10', 'хворіє', 'Тест'),
+('3000000018', 1, 'J00', 0, '2025-02-12', 'хворіє', 'Тест'),
+('3000000019', 1, 'J10', 0, '2025-02-14', 'хворіє', 'Тест'),
+('3000000020', 1, 'J10', 0, '2025-02-16', 'хворіє', 'Тест');
